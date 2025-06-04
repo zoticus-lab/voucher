@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verifikasi Pendaftar Voucher Kurban</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('dashboard') }}">Dashboard Admin</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('index') }}">Form Pendaftaran</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('verifikasi') }}">Semua Data</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('belum_diambil') }}">Belum Diambil</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('sudah_diambil') }}">Sudah Diambil</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-5">
+        <h1 class="text-center mb-4">
+            {% if view_type == "belum_diambil" %}
+                Data Pendaftar Belum Mengambil Voucher
+            {% elif view_type == "sudah_diambil" %}
+                Data Pendaftar Sudah Mengambil Voucher
+            {% else %}
+                Semua Data Pendaftar Voucher Kurban
+            {% endif %}
+        </h1>
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <a href="{{ url_for('print_all_voucher') }}" class="btn btn-danger" target="_blank">
+                                <i class="bi bi-printer"></i> Print Semua Voucher (PDF)
+                            </a>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>No.</th>
+                                        <th>Kode QR</th>
+                                        <th>Nama</th>
+                                        <th>Alamat</th>
+                                        <th>No. HP</th>
+                                        <th>Tipe Kuota</th>
+                                        <th>Status</th>
+                                        <th>Foto</th>
+                                        <th>Barcode</th>
+                                        <th>Tanggal Daftar</th>
+                                        <th>Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for p in pendaftar %}
+                                    <tr id="row-{{ p['id'] }}">
+                                        <form method="POST" action="{{ url_for('edit_pendaftar', id=p['id']) }}">
+                                        <td>{{ loop.index }}</td>
+                                        <td>{{ p['kode_qr'] }}</td>
+                                        <td>
+                                            <input type="text" name="nama" class="form-control form-control-sm" value="{{ p['nama'] }}" required>
+                                        </td>
+                                        <td>
+                                            <input type="text" name="alamat" class="form-control form-control-sm" value="{{ p['alamat'] }}" required>
+                                        </td>
+                                        <td>
+                                            <input type="text" name="no_hp" class="form-control form-control-sm" value="{{ p['no_hp'] }}" required>
+                                        </td>
+                                        <td>
+                                            <select name="tipe_kuota" class="form-select form-select-sm">
+                                                <option value="lokal" {% if p['tipe_kuota']=='lokal' %}selected{% endif %}>Lokal</option>
+                                                <option value="luar" {% if p['tipe_kuota']=='luar' %}selected{% endif %}>Luar</option>
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-{{ 'danger' if p['status'] == 'belum_diambil' else 'success' }}">
+                                                {{ p['status']|replace('_', ' ')|title }}
+                                            </span>
+                                            {% if not p['nama'] and not p['alamat'] and not p['no_hp'] %}
+                                            <span class="badge bg-secondary">QR Kosong</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if p['foto'] %}
+                                            <img src="{{ url_for('static', filename='uploads/' + p['foto']) }}" alt="Foto {{ p['nama'] }}" class="img-thumbnail" style="max-width: 100px;">
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if p['barcode'] %}
+                                                <img src="{{ url_for('static', filename='barcodes/' + p['barcode']) }}" alt="Barcode {{ p['kode_qr'] }}" class="img-thumbnail" style="max-width: 100px;">
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ p['tanggal_daftar'] }}</td>
+                                        <td>
+                                            </form>
+                                            <form action="{{ url_for('update_status', id=p['id']) }}" method="POST" style="display: inline;">
+                                                <input type="hidden" name="status" value="{{ 'sudah_diambil' if p['status'] == 'belum_diambil' else 'belum_diambil' }}">
+                                                <button type="submit" class="btn btn-sm btn-{{ 'success' if p['status'] == 'belum_diambil' else 'warning' }}">
+                                                    {{ 'Tandai Sudah Diambil' if p['status'] == 'belum_diambil' else 'Tandai Belum Diambil' }}
+                                                </button>
+                                            </form>
+                                            <form method="POST" action="{{ url_for('edit_pendaftar', id=p['id']) }}" style="display: inline;">
+                                                <button type="submit" class="btn btn-sm btn-primary">Simpan</button>
+                                            </form>
+                                            <a href="{{ url_for('verifikasi') }}" class="btn btn-sm btn-secondary">Batal</a>
+                                            <form action="{{ url_for('delete_pendaftar', id=p['id']) }}" method="POST" style="display: inline;" onsubmit="return confirm('Yakin ingin menghapus data ini?');">
+                                                <button type="submit" class="btn btn-sm btn-danger">Hapus</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="text-center mt-3">
+                            <a href="{{ url_for('index') }}" class="btn btn-primary">Tambah Pendaftar Baru</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

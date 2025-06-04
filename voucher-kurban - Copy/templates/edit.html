@@ -1,0 +1,39 @@
+{% extends 'dashboard.html' %}
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Edit Data Pendaftar</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="mb-3">
+                            <label for="nama" class="form-label">Nama</label>
+                            <input type="text" class="form-control" id="nama" name="nama" value="{{ pendaftar['nama'] }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="alamat" class="form-label">Alamat</label>
+                            <input type="text" class="form-control" id="alamat" name="alamat" value="{{ pendaftar['alamat'] }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="no_hp" class="form-label">No HP</label>
+                            <input type="text" class="form-control" id="no_hp" name="no_hp" value="{{ pendaftar['no_hp'] }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="tipe_kuota" class="form-label">Tipe Kuota</label>
+                            <select class="form-select" id="tipe_kuota" name="tipe_kuota">
+                                <option value="lokal" {% if pendaftar['tipe_kuota']=='lokal' %}selected{% endif %}>Lokal</option>
+                                <option value="luar" {% if pendaftar['tipe_kuota']=='luar' %}selected{% endif %}>Luar</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Simpan</button>
+                        <a href="{{ url_for('verifikasi') }}" class="btn btn-secondary">Batal</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
